@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GST Address Data Extractor</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="#" class="active">Main Extractor</a></li>
+        <li><a href="#district-filter">District Filter</a></li>
+        <li><a href="#GSTIN Profile">GSTIN Profile</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Main Extractor View -->
+    <div id="main-extractor">
+      <header>
+        <h1>GST Address Data Extractor</h1>
+        <p>Upload Excel files containing business registration data to extract structured address information</p>
+      </header>
+      <div class="card">
+        <h2>Upload Excel File</h2>
+        <div class="upload-container" id="upload-area">
+          <svg class="upload-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="primary-text">Drag and drop or click to upload an Excel file</p>
+          <p class="secondary-text">The file should contain business registration data with address information</p>
+          <input type="file" id="file-upload" accept=".xlsx,.xls" class="hidden-input">
+          <button id="file-button" class="primary-button">Choose Excel File</button>
+          <div id="loading-indicator" class="loading hidden">Processing...</div>
+        </div>
+      </div>                                                                         
+      <div id="filter-section" class="card hidden">
+        <h2>Filter Data</h2>
+        <form id="filter-form">
+          <div class="filter-controls">
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="pincode-filter">Pincode</label>
+                <input type="text" id="pincode-filter" placeholder="Enter 6-digit pincode" maxlength="6">
+              </div>
+              
+              <div class="filter-group">
+                <label for="village-filter">Village/Nagar</label>
+                <input type="text" id="village-filter" placeholder="Enter village or nagar name">
+<div id="village-suggestions" class="suggestions-box"></div>
+              </div>
+            </div>
+            
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="street-filter">Street</label>
+                
+                <input type="text" id="street-filter" placeholder="Enter street">
+                <div id="street-suggestions" class="suggestions-box"></div>
+
+              </div>
+              
+              <div class="filter-group">
+                <label for="jurisdiction-filter">Lowest Jurisdiction</label>
+                <input type="text" id="jurisdiction-filter" placeholder="Enter jurisdiction">
+              </div>
+            </div>
+            
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="road-filter">Road</label>
+                <input type="text" id="road-filter" placeholder="Enter road">
+<div id="road-suggestions" class="suggestions-box"></div>
+              </div>
+            </div>
+            
+            <div class="button-group">
+              <button type="submit" id="apply-filter" class="primary-button">Submit</button>
+              <button type="button" id="clear-filter" class="secondary-button">Clear Filters</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div id="data-section" class="card hidden">
+        <div class="data-header">
+          <h2><span id="record-count">0</span> Records Found</h2>
+          <div class="button-group">
+            <button id="toggle-view" class="tertiary-button">Switch to Excel View</button>
+            <button id="download-excel" class="success-button">Download as Excel</button>
+          </div>
+        </div>
+        
+        <!-- Card View Container -->
+        <div id="card-container" class="card-grid"></div>
+        
+        <!-- Excel View Container -->
+        <div id="excel-container" class="excel-container hidden">
+          <table id="excel-table" class="excel-table">
+            <thead>
+              <tr>
+                <th width="50">Visited</th>
+                <th>GSTIN</th>
+                <th>Trade Name/ Legal Name</th>
+                <th>Email Id</th>
+                <th>Mobile No.</th>
+                <th>Assigned To</th>
+                <th>Effective Date of Registration</th>
+                <th>Type of Taxpayer</th>
+                <th>Constitution of Business</th>
+                <th>IS_MIGRATED</th>
+                <th>Lowest Jurisdiction</th>
+                <th>HSN Code</th>
+                <th>Address of Principal Place of Business</th>
+                <th>No. of Additional Place of Business</th>
+                <th>Circle</th>
+                <th>Survey Number</th>
+                <th>Door No</th>
+                <th>Booth Number</th>
+                <th>Floor</th>
+                <th>Street</th>
+                <th>Road</th>
+                <th>Nagar</th>
+                <th>Village</th>
+                <th>Taluk</th>
+                <th>District</th>
+                <th>Pincode</th>
+                <th>Landmark</th>
+                <th>BANK NAME</th>
+                <th>ACCOUNT NUMBER</th>
+              </tr>
+            </thead>
+            <tbody id="excel-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- District Filter View -->
+    <div id="district-filter" class="hidden">
+      <header>
+        <h1>District Filter</h1>
+        <p>Filter GST registration data by district</p>
+      </header>
+
+      <div class="card">
+        <h2>Select District</h2>
+        <div class="district-filters">
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="district" value="Tiruvannamalai" checked /> Tiruvannamalai
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="district" value="Others" /> Others
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="district" value="All" /> All
+            </label>
+          </div>
+
+          <button id="submit-district" class="primary-button" style="margin-top:1rem;">Submit</button>
+        </div>
+
+        <div class="district-result mt-4 p-4 bg-gray-50 rounded">
+          <p>Selected district: <span id="selected-district">Tiruvannamalai</span></p>
+        </div>
+
+        <div id="district-data-list" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+
+    <!-- GSTIN Profile -->
+    <div id="GSTIN Profile" class="hidden">
+      <header>
+        <h1>GSTIN Profile GST Address Data Extractor</h1>
+        <p>An GSTIN Profile for Excel data processing</p>
+      </header>
+
+      <div class="card">
+        <h2>Search GSTIN</h2>
+        <div class="search-container" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem;">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Enter GSTIN"
+            class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-2/3"
+          />
+          <button onclick="submitSearch()" class="primary-button">
+            Search
+          </button>
+        </div>
+        <div id="search-results" style="margin-top: 2rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

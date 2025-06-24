@@ -644,12 +644,12 @@ streetInput.addEventListener("input", () => {
     .map(street => `<div class="suggestion-item">${street}</div>`)
     .join("");
 
-  document.querySelectorAll(".suggestion-item").forEach(item => {
-    item.addEventListener("click", () => {
-      streetInput.value = item.textContent;
-      streetSuggestionBox.innerHTML = "";
-    });
-  });
+  // document.querySelectorAll(".suggestion-item").forEach(item => {
+  //   item.addEventListener("click", () => {
+  //     streetInput.value = item.textContent;
+  //     streetSuggestionBox.innerHTML = "";
+  //   });
+  // });
 });
 
 // VILLAGE AUTOCOMPLETE
@@ -714,6 +714,108 @@ roadInput.addEventListener("input", () => {
     });
   });
 });
+
+
+// ...existing code...
+
+// --- MULTI-SELECT STREET FILTER ---
+const selectedStreetsContainer = document.getElementById("selected-streets");
+const selectedStreetsInput = document.getElementById("selected-streets-input");
+let selectedStreets = [];
+
+// Update chips and hidden input
+function renderSelectedStreets() {
+  selectedStreetsContainer.innerHTML = selectedStreets
+    .map(
+      street =>
+        `<span class="selected-chip">${street}<span class="remove-chip" data-value="${street}">&times;</span></span>`
+    )
+    .join("");
+  selectedStreetsInput.value = selectedStreets.join(",");
+}
+
+// Add street from suggestion
+streetSuggestionBox.addEventListener("mousedown", (e) => {
+  if (e.target.classList.contains("suggestion-item")) {
+    const street = e.target.textContent;
+    if (!selectedStreets.includes(street)) {
+      selectedStreets.push(street);
+      renderSelectedStreets();
+    }
+    streetInput.focus();
+    streetInput.dispatchEvent(new Event('input'));
+    // Do NOT close the suggestion box or clear the input here!
+  }
+});
+
+
+// Remove chip
+selectedStreetsContainer.addEventListener("click", (e) => {
+  if (e.target.classList.contains("remove-chip")) {
+    const street = e.target.getAttribute("data-value");
+    selectedStreets = selectedStreets.filter(s => s !== street);
+    renderSelectedStreets();
+  }
+});
+
+// Modify street autocomplete to not overwrite chips
+streetInput.addEventListener("input", () => {
+  const query = streetInput.value.toLowerCase();
+  if (!query || !parsedData.length) {
+    streetSuggestionBox.innerHTML = "";
+    return;
+  }
+  const uniqueStreets = [...new Set(parsedData.map(d => d.street).filter(s =>
+    s && s.toLowerCase().startsWith(query) && !selectedStreets.includes(s)
+  ))];
+  if (!uniqueStreets.length) {
+    streetSuggestionBox.innerHTML = "";
+    return;
+  }
+  streetSuggestionBox.innerHTML = uniqueStreets
+    .slice(0, 10)
+    .map(street => `<div class="suggestion-item">${street}</div>`)
+    .join("");
+});
+
+// Clear chips on filter clear
+function clearFilters() {
+  pincodeFilter.value = '';
+  streetInput.value = '';
+  selectedStreets = [];
+  renderSelectedStreets();
+  roadFilter.value = '';
+  jurisdictionFilter.value = '';
+  villageFilter.value = '';
+  filteredData = [...parsedData];
+  renderData();
+  showToast('Filters cleared', 'success');
+}
+
+// Update filter logic to use selectedStreets
+function applyFilters(e) {
+  e.preventDefault();
+  const pincode = pincodeFilter.value.trim();
+  const road = roadFilter.value.trim().toLowerCase();
+  const jurisdiction = jurisdictionFilter.value.trim().toLowerCase();
+  const village = villageFilter.value.trim().toLowerCase();
+
+  filteredData = parsedData.filter(item => {
+    const matchPincode = !pincode || item.pincode.includes(pincode);
+    const matchStreet =
+      !selectedStreets.length ||
+      selectedStreets.some(street => item.street && item.street.toLowerCase() === street.toLowerCase());
+    const matchRoad = !road || item.road.toLowerCase().includes(road);
+    const matchJurisdiction = !jurisdiction || item.lowestJurisdiction.toLowerCase().includes(jurisdiction);
+    const matchVillage = !village || item.village.toLowerCase().includes(village);
+    return matchPincode && matchStreet && matchRoad && matchJurisdiction && matchVillage;
+  });
+
+  renderData();
+  showToast(`Showing ${filteredData.length} of ${parsedData.length} records`, 'success');
+}
+
+
 
 document.addEventListener("click", (e) => {
   if (!villageSuggestionBox.contains(e.target) && e.target !== villageInput) {

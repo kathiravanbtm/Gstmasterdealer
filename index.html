@@ -55,14 +55,18 @@
               </div>
             </div>
             
-            <div class="filter-row">
-              <div class="filter-group">
-                <label for="street-filter">Street</label>
-                
+            <div class="filter-group">
+              <label for="street-filter">Street</label>
+              <div id="street-multiselect" class="multiselect-container">
+                <!-- Selected streets will appear here as chips -->
+                <div id="selected-streets" class="selected-chips"></div>
                 <input type="text" id="street-filter" placeholder="Enter street">
-                <div id="street-suggestions" class="suggestions-box"></div>
-
               </div>
+              <div id="street-suggestions" class="suggestions-box"></div>
+              <!-- Optionally, store selected values in a hidden input for form submission -->
+              <input type="hidden" name="selected-streets" id="selected-streets-input">
+            </div>
+
               
               <div class="filter-group">
                 <label for="jurisdiction-filter">Lowest Jurisdiction</label>

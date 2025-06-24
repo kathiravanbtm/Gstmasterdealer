@@ -511,3 +511,43 @@ td{
   padding-left: 2px;
   padding-right: 2px;
 }
+
+
+
+
+
+/* mine */
+
+/* Add to style.css */
+.multiselect-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  background: #fff;
+}
+
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.selected-chip {
+  background: #e0e7ff;
+  color: #1e40af;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.selected-chip .remove-chip {
+  cursor: pointer;
+  font-weight: bold;
+}
